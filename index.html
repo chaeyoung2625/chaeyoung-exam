@@ -287,12 +287,39 @@ async function api(path,options={}){
 const c=cfg();
 if(!c.key)throw new Error('Publishable key를 먼저 설정해주세요.');
 
+const separator=path.includes('?')?'&':'?';
+const url=c.url+'/rest/v1/'+path+separator+'apikey='+encodeURIComponent(c.key);
+
 const headers={
-'apikey':c.key,
-'Authorization':'Bearer '+c.key,
-'Content-Type':'application/json',
-'Prefer':'return=representation',
+'Accept':'application/json',
 ...(options.headers||{})
+};
+
+if(options.body){
+headers['Content-Type']='application/json';
+}
+
+let res;
+try{
+res=await fetch(url,{...options,headers});
+}catch(e){
+throw new Error('브라우저에서 Supabase 서버에 접속하지 못했어요. 주소/네트워크/CORS를 확인해주세요. ('+(e?.message||'Failed to fetch')+')');
+}
+
+const text=await res.text();
+
+if(!res.ok){
+let detail=text;
+try{
+const j=JSON.parse(text);
+detail=j.message||j.error_description||j.hint||j.error||text;
+}catch(_){}
+throw new Error('Supabase 오류 '+res.status+': '+detail);
+}
+
+if(!text)return [];
+try{return JSON.parse(text);}
+catch(_){return [];}
 };
 
 const res=await fetch(c.url+'/rest/v1/'+path,{...options,headers});
@@ -816,4 +843,3 @@ setKeywordTags('');
 </script>
 </body>
 </html>
-
