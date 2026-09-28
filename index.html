@@ -32,8 +32,9 @@ textarea{min-height:120px;resize:vertical}
 .card{border:1px solid #e5e5ea;border-radius:13px;padding:18px;margin-top:12px}
 .meta{font-size:13px;color:#777;margin-bottom:8px}
 .question{font-weight:700;white-space:pre-wrap;line-height:1.6}
-.answer{margin-top:8px;background:#f4f1ff;border-radius:10px;padding:5px 12px 9px;line-height:1.4;height:auto;min-height:0}
-.answerTitle{font-weight:700;margin:0 0 8px 0;line-height:1.35}
+.answer{margin-top:8px;background:#f4f1ff;border-radius:10px;padding:9px 12px;line-height:1.4;height:auto;min-height:0;white-space:normal}
+.answerTitle{font-weight:700;margin:0 0 6px 0;line-height:1.35}
+.answerBody{white-space:pre-line}
 .small{font-size:13px;color:#777}.empty{text-align:center;color:#888;padding:35px}.hidden{display:none}
 .notice{background:#fff7df;border:1px solid #f1d58a;padding:12px;border-radius:10px;margin-top:12px;line-height:1.5}
 .ok{color:#16803c}.bad{color:#c33}
@@ -665,16 +666,10 @@ onchange="toggleSelection('${String(q.id).replace(/'/g,"\\'")}', this.checked)">
 
 <div class="question">📌 ${esc(q.question)}</div>
 
-<div class="answer">
-<div class="answerTitle">📝 답변</div>
-${esc(q.answerText||'답변 없음')}
-</div>
+<div class="answer"><div class="answerTitle">📝 답변</div><div class="answerBody">${esc(q.answerText||'답변 없음')}</div></div>
 
 ${q.explanation?`
-<div class="answer">
-<div class="answerTitle">💡 해설 / 암기 포인트</div>
-${esc(q.explanation)}
-</div>`:''}
+<div class="answer"><div class="answerTitle">💡 해설 / 암기 포인트</div><div class="answerBody">${esc(q.explanation)}</div></div>`:''}
 
 ${keywords.length?`
 <div class="keyword-list">
