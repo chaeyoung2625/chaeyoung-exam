@@ -725,7 +725,7 @@ $('printModal').classList.add('hidden');
 
 function printMeta(q){
 const parts=[];
-if(q.year)parts.push(esc(q.year)+'년');
+if(q.year)parts.push(esc(q.year));
 if(q.round)parts.push(esc(q.round));
 if(q.number)parts.push(esc(q.number)+'번');
 return parts.join(' ');
@@ -750,14 +750,9 @@ return `
   ${source?`<div class="print-source">${source}</div>`:''}
   <div class="print-question">${esc(q.question)}</div>
   ${content!=='question'?`
-  <div class="print-answer">
-    ${esc(q.answerText||'')}
-  </div>`:''}
+  <div class="print-answer">${esc(q.answerText||'')}</div>`:''}
   ${content==='all'&&q.explanation?`
-  <div class="print-answer explanation-answer">
-    <div class="print-label">해설 / 암기 포인트</div>
-    ${esc(q.explanation)}
-  </div>`:''}
+  <div class="print-answer explanation-answer"><div class="print-label">해설 / 암기 포인트</div>${esc(q.explanation)}</div>`:''}
   ${kws.length?`<div class="print-keywords">${kws.map(k=>`<span>🏷️ ${esc(k)}</span>`).join('')}</div>`:''}
 </article>`;
 }).join('');
