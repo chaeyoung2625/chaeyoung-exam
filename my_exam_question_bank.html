@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나의 서술형 기출문제 은행</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:#f7f7fb;color:#222}
+header{background:#6c4ee6;color:#fff;padding:24px 28px;position:relative}header h1{margin:0;font-size:24px}header p{margin:7px 0 0;opacity:.9}
+header .status{position:absolute;right:24px;top:24px;background:#ffffff22;padding:8px 12px;border-radius:10px;font-size:13px}
+nav{display:flex;gap:8px;padding:14px 28px;background:#fff;border-bottom:1px solid #ddd}
+button{border:0;border-radius:10px;padding:10px 15px;cursor:pointer;font-weight:700}.tab{background:#eee;color:#444}.tab.active{background:#6c4ee6;color:#fff}
+main{max-width:1100px;margin:25px auto;padding:0 18px}.panel{background:#fff;border-radius:16px;padding:22px;box-shadow:0 2px 12px #0000000d;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.full{grid-column:1/-1}
+label{display:block;font-weight:700;margin-bottom:6px}input,select,textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:11px;font-size:15px;background:#fff}textarea{min-height:120px;resize:vertical}
+.actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}.primary{background:#6c4ee6;color:#fff}.danger{background:#ffe7e7;color:#c33}.secondary{background:#eee}
+.searchbar{display:grid;grid-template-columns:1fr 170px 130px;gap:9px}
+.card{border:1px solid #e5e5ea;border-radius:13px;padding:18px;margin-top:12px}.meta{font-size:13px;color:#777;margin-bottom:8px}
+.question{font-weight:700;white-space:pre-wrap;line-height:1.6}.answer{margin-top:14px;background:#f4f1ff;border-radius:10px;padding:13px;line-height:1.65;white-space:pre-wrap}
+.answerTitle{font-weight:700;margin-bottom:5px}.small{font-size:13px;color:#777}.empty{text-align:center;color:#888;padding:35px}.hidden{display:none}
+.notice{background:#fff7df;border:1px solid #f1d58a;padding:12px;border-radius:10px;margin-top:12px;line-height:1.5}
+.ok{color:#16803c}.bad{color:#c33}
+@media(max-width:700px){.grid,.searchbar{grid-template-columns:1fr}.full{grid-column:auto}header .status{position:static;display:inline-block;margin-top:10px}}
+</style>
+</head>
+<body>
+<header>
+<h1>📚 나의 서술형 기출문제 은행</h1>
+<p>직접 입력하고 저장해서 언제든 찾아보는 나만의 문제은행</p>
+<div id="cloudStatus" class="status">☁️ 클라우드 미연결</div>
+</header>
+<nav>
+<button class="tab active" data-tab="list">문제 보기</button>
+<button class="tab" data-tab="add">➕ 문제 추가</button>
+<button class="tab" data-tab="settings">⚙️ 클라우드 설정</button>
+</nav>
+
+<main>
+<section id="list">
+<div class="panel">
+<h2>🔎 문제 찾기</h2>
+<div class="searchbar">
+<input id="search" placeholder="문제, 답변, 해설, 키워드 검색">
+<select id="subjectFilter"><option value="">전체 과목</option></select>
+<select id="yearFilter"><option value="">전체 연도</option></select>
+</div>
+<div class="actions">
+<button class="secondary" onclick="setFilter('all')">전체</button>
+<button class="secondary" onclick="setFilter('wrong')">❌ 오답</button>
+<button class="secondary" onclick="setFilter('star')">⭐ 즐겨찾기</button>
+<button class="secondary" onclick="loadCloud()">☁️ 클라우드 새로고침</button>
+</div>
+</div>
+<div id="cards"></div>
+</section>
+
+<section id="add" class="hidden">
+<div class="panel">
+<h2 id="formTitle">➕ 기출문제 추가</h2>
+<div class="grid">
+<div><label>과목</label><select id="subject" onchange="updateCategoryOptions()">
+<option value="">과목을 선택하세요</option>
+<option value="직업심리학">직업심리학</option>
+<option value="직업상담 및 취업지원">직업상담 및 취업지원</option>
+<option value="직업정보">직업정보</option>
+<option value="노동시장">노동시장</option>
+</select></div>
+<div><label>세부 영역</label><select id="category"><option value="">세부 영역을 선택하세요</option></select></div>
+<div><label>연도</label><input id="year" type="number" placeholder="예: 2026"></div>
+<div><label>회차</label><input id="round" placeholder="예: 1회"></div>
+<div><label>문제 번호</label><input id="number" placeholder="예: 12"></div>
+<div><label>출처 교재</label><select id="sourceBook">
+<option value="">교재를 선택하세요</option><option value="실기이론서">실기이론서</option><option value="실기기출서">실기기출서</option>
+</select></div>
+<div><label>페이지</label><input id="page" type="number" min="1" placeholder="예: 125"></div>
+<div class="full"><label>문제</label><textarea id="question" placeholder="서술형 기출문제를 입력하세요"></textarea></div>
+<div class="full"><label>답변</label><textarea id="answerText" placeholder="모범답안 또는 내가 정리한 답변을 입력하세요"></textarea></div>
+<div class="full"><label>해설 / 암기 포인트 (선택)</label><textarea id="explanation" placeholder="추가 설명이나 암기 포인트를 입력하세요"></textarea></div>
+<div class="full"><label>키워드 (선택)</label><input id="keywords" placeholder="예: 홀랜드, 직업흥미"></div>
+</div>
+<div class="actions">
+<button class="primary" onclick="saveQuestion()">💾 저장하기</button>
+<button class="secondary" onclick="resetForm()">초기화</button>
+</div>
+<p class="small">☁️ 클라우드 연결 후 저장하면 PC와 휴대폰에서 같은 문제가 보입니다.</p>
+</div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="panel">
+<h2>☁️ 클라우드 설정</h2>
+<p>Supabase에서 복사한 <b>Publishable key</b>를 아래에 붙여넣어 주세요. Secret key는 절대 입력하지 마세요.</p>
+<label>Project URL</label>
+<input id="projectUrl" value="https://nmdwdthqzqweyrtiack.supabase.co">
+<br><br>
+<label>Publishable key</label>
+<input id="publishableKey" type="password" placeholder="sb_publishable_...">
+<div class="actions">
+<button class="primary" onclick="saveCloudSettings()">☁️ 연결 저장</button>
+<button class="secondary" onclick="testCloud()">연결 테스트</button>
+</div>
+<div id="cloudMessage" class="small" style="margin-top:12px"></div>
+<div class="notice">현재 데이터베이스는 앞 단계에서 만든 <b>questions</b> 테이블과 연결됩니다. Publishable key는 브라우저에서 사용할 수 있는 키지만, Secret key / service_role key는 사용하지 않습니다.</div>
+</div>
+</section>
+</main>
+
+<script>
+const categoryMap={
+ "직업심리학":["직업의 선택과 발달 이론","직업심리검사","직무분석이론","조직에서의 경력개발","직업과 스트레스"],
+ "직업상담 및 취업지원":["상담의 이해","직업상담의 이론 및 접근방법","직업상담의 기법","진로 및 직업상담 실무"],
+ "직업정보":["직업정보의 이해","직업 및 산업분류의 활용","직업관련 정보","직업정보의 수집 및 분석"],
+ "노동시장":["임금의 제개념","실업의 제개념","노동시장의 이해","노사관계"]
+};
+let questions=[],editingId=null,filter='all';
+const $=id=>document.getElementById(id);
+const val=id=>$(id).value.trim();
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function cfg(){return {url:localStorage.getItem('supabaseUrl')||$('projectUrl').value.trim().replace(/\/$/,''),key:localStorage.getItem('supabaseKey')||''}}
+function updateStatus(ok,msg=''){
+ const el=$('cloudStatus');el.textContent=ok?'☁️ 클라우드 연결됨':'☁️ 클라우드 미연결';el.style.background=ok?'#ffffff33':'#ffffff22';
+ if(msg)$('cloudMessage').innerHTML=msg;
+}
+function updateCategoryOptions(){
+ const subject=$('subject').value,select=$('category'),current=select.value,list=categoryMap[subject]||[];
+ select.innerHTML='<option value="">세부 영역을 선택하세요</option>'+list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+ if(list.includes(current))select.value=current;
+}
+async function api(path,options={}){
+ const c=cfg(); if(!c.key) throw new Error('Publishable key를 먼저 설정해주세요.');
+ const headers={'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'return=representation',...(options.headers||{})};
+ const res=await fetch(c.url+'/rest/v1/'+path,{...options,headers});
+ if(!res.ok){let t=await res.text();throw new Error(t||('HTTP '+res.status))}
+ return res.status===204?[]:await res.json();
+}
+async function testCloud(){
+ try{await api('questions?select=id&limit=1');updateStatus(true);$('cloudMessage').innerHTML='<span class="ok">✅ 연결 성공! questions 테이블을 정상적으로 읽을 수 있어요.</span>';await loadCloud();}
+ catch(e){updateStatus(false);$('cloudMessage').innerHTML='<span class="bad">❌ 연결 실패: '+esc(e.message)+'</span>'}
+}
+function saveCloudSettings(){
+ const key=$('publishableKey').value.trim(),url=$('projectUrl').value.trim().replace(/\/$/,'');
+ if(!key){alert('Publishable key를 붙여넣어 주세요.');return}
+ localStorage.setItem('supabaseKey',key);localStorage.setItem('supabaseUrl',url);
+ $('publishableKey').value='';testCloud();
+}
+async function loadCloud(){
+ try{
+  const rows=await api('questions?select=*&order=created_at.desc');
+  questions=rows.map(r=>({
+   id:r.id,subject:r.subject,category:r.category,year:r.year?.toString()||'',round:r.round||'',
+   number:r.question_number||'',sourceBook:r.source_book||'',page:r.page?.toString()||'',
+   question:r.question||'',answerText:r.answer_text||'',explanation:r.explanation||'',keywords:r.keywords||'',
+   star:!!r.is_starred,wrong:!!r.is_wrong
+  }));
+  updateStatus(true);render();
+ }catch(e){updateStatus(false);if(cfg().key)$('cloudMessage').innerHTML='<span class="bad">❌ '+esc(e.message)+'</span>';else render();}
+}
+async function saveQuestion(){
+ const old=questions.find(x=>x.id===editingId);
+ const data={
+  subject:val('subject'),category:val('category')||null,year:val('year')?Number(val('year')):null,round:val('round')||null,
+  question_number:val('number')||null,source_book:val('sourceBook')||null,page:val('page')?Number(val('page')):null,
+  question:val('question'),answer_text:val('answerText')||null,explanation:val('explanation')||null,keywords:val('keywords')||null,
+  is_starred:old?.star||false,is_wrong:old?.wrong||false
+ };
+ if(!data.question){alert('문제를 입력해주세요.');return}
+ try{
+  if(!cfg().key)throw new Error('클라우드 설정에서 Publishable key를 먼저 연결해주세요.');
+  if(editingId){
+   await api('questions?id=eq.'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(data)});
+  }else{
+   await api('questions',{method:'POST',body:JSON.stringify(data)});
+  }
+  await loadCloud();resetForm();showTab('list');
+ }catch(e){alert('저장에 실패했어요.\\n'+e.message)}
+}
+function resetForm(){
+ editingId=null;$('formTitle').textContent='➕ 기출문제 추가';
+ ['subject','year','round','number','question','answerText','explanation','keywords','category','sourceBook','page'].forEach(id=>$(id).value='');
+ updateCategoryOptions();
+}
+function editQuestion(id){
+ const q=questions.find(x=>x.id===id);if(!q)return;
+ editingId=id;$('formTitle').textContent='✏️ 문제 수정';
+ ['subject','year','round','number','question','answerText','explanation','keywords','sourceBook','page'].forEach(id=>$(id).value=q[id]||'');
+ updateCategoryOptions();$('category').value=q.category||'';showTab('add');
+}
+async function toggle(id,key){
+ const q=questions.find(x=>x.id===id);if(!q)return;
+ const dbKey=key==='star'?'is_starred':'is_wrong',newValue=!q[key];
+ try{await api('questions?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({[dbKey]:newValue})});await loadCloud();}
+ catch(e){alert('변경에 실패했어요.\\n'+e.message)}
+}
+async function deleteQuestion(id){
+ if(!confirm('이 문제를 삭제할까요?'))return;
+ try{await api('questions?id=eq.'+encodeURIComponent(id),{method:'DELETE'});await loadCloud();}
+ catch(e){alert('삭제에 실패했어요.\\n'+e.message)}
+}
+function setFilter(x){filter=x;render()}
+function showTab(tab){
+ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));$(tab).classList.remove('hidden');
+ document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$('search').oninput=render;$('subjectFilter').onchange=render;$('yearFilter').onchange=render;
+function filters(){
+ const subjects=[...new Set(questions.map(q=>q.subject).filter(Boolean))].sort();
+ const years=[...new Set(questions.map(q=>q.year).filter(Boolean))].sort((a,b)=>b-a);
+ const s=$('subjectFilter').value,y=$('yearFilter').value;
+ $('subjectFilter').innerHTML='<option value="">전체 과목</option>'+subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');$('subjectFilter').value=subjects.includes(s)?s:'';
+ $('yearFilter').innerHTML='<option value="">전체 연도</option>'+years.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');$('yearFilter').value=years.includes(y)?y:'';
+}
+function render(){
+ filters();
+ const term=$('search').value.toLowerCase(),subj=$('subjectFilter').value,year=$('yearFilter').value;
+ const arr=questions.filter(q=>{
+  const hay=[q.subject,q.category,q.year,q.round,q.number,q.question,q.answerText,q.explanation,q.keywords,q.sourceBook,q.page].join(' ').toLowerCase();
+  return hay.includes(term)&&(subj===''||q.subject===subj)&&(year===''||String(q.year)===String(year))&&(filter==='all'||(filter==='wrong'&&q.wrong)||(filter==='star'&&q.star));
+ });
+ if(!arr.length){$('cards').innerHTML='<div class="panel empty">저장된 문제가 없거나 조건에 맞는 문제가 없습니다.<br>➕ 문제 추가에서 첫 문제를 입력해보세요!</div>';return}
+ $('cards').innerHTML=arr.map(q=>`
+ <div class="card">
+  <div class="meta">${esc(q.subject||'과목 미지정')}${q.category?' · '+esc(q.category):''} · ${esc(q.year||'')} ${esc(q.round||'')} · ${esc(q.number||'')}번${q.sourceBook?' · 📖 '+esc(q.sourceBook):''}${q.page?' p.'+esc(q.page):''}</div>
+  <div class="question">📌 ${esc(q.question)}</div>
+  <div class="answer"><div class="answerTitle">📝 답변</div>${esc(q.answerText||'답변 없음')}</div>
+  ${q.explanation?`<div class="answer"><div class="answerTitle">💡 해설 / 암기 포인트</div>${esc(q.explanation)}</div>`:''}
+  ${q.keywords?`<div class="small" style="margin-top:9px">🏷️ ${esc(q.keywords)}</div>`:''}
+  <div class="actions">
+   <button class="secondary" onclick="toggle(${q.id},'star')">${q.star?'⭐ 즐겨찾기 해제':'☆ 즐겨찾기'}</button>
+   <button class="secondary" onclick="toggle(${q.id},'wrong')">${q.wrong?'✅ 오답 해제':'❌ 오답 표시'}</button>
+   <button class="secondary" onclick="editQuestion(${q.id})">✏️ 수정</button>
+   <button class="danger" onclick="deleteQuestion(${q.id})">삭제</button>
+  </div>
+ </div>`).join('');
+}
+(function init(){
+ const c=cfg();if(c.key){$('projectUrl').value=c.url;$('publishableKey').placeholder='이미 저장됨 — 다시 입력하지 않아도 됩니다.';testCloud();}
+ else render();
+})();
+</script>
+</body>
+</html>
