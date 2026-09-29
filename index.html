@@ -163,6 +163,11 @@ textarea{min-height:120px;resize:vertical}
       <label><input type="radio" name="printLayout" value="card" checked> ✂️ 카드형</label>
       <label><input type="radio" name="printLayout" value="paper"> 📄 일반 문제지</label>
     </div>
+    <label style="margin-top:14px">출력 순서</label>
+    <div class="print-options">
+      <label><input type="radio" name="printOrder" value="asc" checked> ⬆️ 위 → 아래</label>
+      <label><input type="radio" name="printOrder" value="desc"> ⬇️ 아래 → 위</label>
+    </div>
     <div class="actions">
       <button class="primary" onclick="doPrint()">🖨️ 인쇄하기</button>
       <button class="secondary" onclick="closePrintDialog()">취소</button>
@@ -787,9 +792,11 @@ body{background:#fff}
 }
 
 function doPrint(){
-const arr=questions.filter(q=>selectedIds.has(selectedKey(q.id)));
+let arr=questions.filter(q=>selectedIds.has(selectedKey(q.id)));
 const content=document.querySelector('input[name="printContent"]:checked').value;
 const layout=document.querySelector('input[name="printLayout"]:checked').value;
+const order=document.querySelector('input[name="printOrder"]:checked').value;
+if(order==='desc') arr=arr.reverse();
 const w=window.open('','_blank');
 
 if(!w){
